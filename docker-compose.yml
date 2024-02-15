@@ -27,6 +27,37 @@ services:
       - "3306:3306"
     networks:
       - laravel_network
+  
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: laravel_phpmyadmin
+    environment:
+      PMA_HOST: mariadb
+      PMA_USER: root
+      PMA_PASSWORD: root_password
+    ports:
+      - "8081:80"
+    networks:
+      - laravel_network
+    depends_on:
+      - mariadb
+  
+  s3:
+      image: minio/minio
+      container_name: laravel_s3
+      ports:
+        - '9000:9000'
+        - '9001:9001'
+      command: server /data --console-address ":9001"
+      networks:
+        - laravel_network
+      volumes:
+        - s3_data:/data
+      environment:
+        - MINIO_ROOT_USER=your_username
+        - MINIO_ROOT_PASSWORD=your_pasword
+        - MINIO_DEFAULT_BUCKETS=your_bucket_name
+
   redis:
     image: redis:alpine
     container_name: laravel_redis
@@ -55,6 +86,12 @@ volumes:
   redis_data:
     driver: local
 
+  s3_data:
+    driver: local
+
 networks:
   laravel_network:
+    driver: bridge
+
+  minionetwork:
     driver: bridge
